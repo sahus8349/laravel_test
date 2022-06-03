@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 
 use App\Models\MenuItem;
 use Illuminate\Routing\Controller as BaseController;
+use Illuminate\Support\Facades\DB;
 
 class MenuController extends BaseController
 {
@@ -95,6 +96,44 @@ class MenuController extends BaseController
      */
 
     public function getMenuItems() {
-        throw new \Exception('implement in coding task 3');
+        $menuitem = MenuItem::all();
+
+        $menu_arr = array();
+        $children = array();
+        $children1 = array();
+        foreach($menuitem AS $value){
+            $children[$value["id"]] = $value;
+            $children[$value["id"]]['children'] = [];
+
+            if(!empty($value["parent_id"])){
+                $children1[$value["parent_id"]][] = $value;
+            }
+        }
+
+        foreach($children AS $value){
+            $parent_id = $value["parent_id"];
+            if(!empty($parent_id)){
+                $parent = $children[$parent_id];
+                if(!empty($parent["parent_id"])){
+                    $master_parent = $children[$parent["parent_id"]];
+                }
+            }
+
+            if(!empty($master_parent)){
+                // $menu_arr[$master_parent["id"]]["children"][$parent["id"]]["children"] = $children1[$value["parent_id"]];
+            }elseif(!empty($parent)){
+                $children2 = $children1[$parent["id"]];
+                foreach($children2 AS $k=>$v){
+                    if(!empty($children1[$v["id"]])){
+                        $children2[$k]["children"] = array_values($children1[$v["id"]]);
+                    }
+                }
+                $menu_arr[$parent["id"]]["children"] = array_values($children2);
+            }else{
+                $menu_arr[$value["id"]] = $value;
+            }
+        }
+
+        return response()->json($menu_arr);
     }
 }

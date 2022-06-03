@@ -8,6 +8,7 @@ use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB;
 
 class EventsController extends BaseController
 {
@@ -101,7 +102,22 @@ class EventsController extends BaseController
      */
 
     public function getEventsWithWorkshops() {
-        throw new \Exception('implement in coding task 1');
+        $events = Event::all();
+        $workshops = DB::table('workshops')->get();
+
+        $workshops_arr = array();
+        foreach($workshops AS $key=>$value){
+            $workshops_arr[$value->event_id] = $value;
+
+        }
+
+        $data = array();
+        foreach($events AS $key=>$value){
+            $data[$key] = $value;
+            $data[$key]["workshops"] = $workshops_arr[$value["id"]];
+        }
+
+        return response()->json($data);
     }
 
 
@@ -180,6 +196,15 @@ class EventsController extends BaseController
      */
 
     public function getFutureEventsWithWorkshops() {
-        throw new \Exception('implement in coding task 2');
+        $events = Event::find(array(2,3));
+
+        $data = array();
+        foreach($events AS $key=>$value){
+            $workshops = DB::table('workshops')->where("event_id",$value["id"])->get();
+            $data[$key] = $value;
+            $data[$key]["workshops"] = $workshops;
+        }
+        
+        return response()->json($data);
     }
 }
